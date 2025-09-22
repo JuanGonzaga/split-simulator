@@ -1,84 +1,84 @@
-# ?? Deploy no GitHub Pages - Guia Completo
+# Deploy no GitHub Pages - Guia Completo
 
-## ?? **Preparação dos Arquivos**
+## Preparacao dos Arquivos
 
-Todos os arquivos já estão prontos na pasta `split-simulator/`:
+Todos os arquivos estao prontos na pasta split-simulator/:
 
 ```
 split-simulator/
-??? index.html          ? Pronto
-??? style.css           ? Pronto  
-??? script.js           ? Pronto
-??? README.md           ? Pronto
-??? .gitignore          ? Pronto
-??? DEPLOY.md           ? Este arquivo
+|-- index.html          Pronto
+|-- style.css           Pronto  
+|-- script.js           Pronto
+|-- README.md           Pronto
+|-- .gitignore          Pronto
+|-- DEPLOY.md           Este arquivo
 ```
 
-## ?? **Setup do GitHub**
+## Setup do GitHub
 
-### **1. Criar Repositório**
+### 1. Criar Repositorio
 ```bash
 # No terminal, na pasta split-simulator/
 git init
 git add .
-git commit -m "?? Initial commit: SPLIT Simulator completo"
+git commit -m "Initial commit: SPLIT Simulator completo"
 
-# Criar repositório no GitHub com o nome: split-simulator
+# Criar repositorio no GitHub com o nome: split-simulator
 # Depois conectar:
 git remote add origin https://github.com/SEU_USUARIO/split-simulator.git
 git branch -M main
 git push -u origin main
 ```
 
-### **2. Ativar GitHub Pages**
-1. Ir para **Settings** do repositório
-2. Scroll até **Pages** (menu lateral)
+### 2. Ativar GitHub Pages
+1. Ir para **Settings** do repositorio
+2. Scroll ate **Pages** (menu lateral)
 3. **Source:** Deploy from branch
 4. **Branch:** main / (root)
 5. Clicar **Save**
 
-?? **Aguarde 2-5 minutos** para o deploy automático.
+Aguarde 2-5 minutos para o deploy automatico.
 
-## ?? **URLs de Acesso**
+## URLs de Acesso
 
-Seu simulador ficará disponível em:
+Seu simulador ficara disponivel em:
 ```
 https://SEU_USUARIO.github.io/split-simulator/
 ```
 
 **Exemplo:**
 ```
-https://juanyurigonzaga.github.io/split-simulator/
+https://juangonzaga.github.io/split-simulator/
 ```
 
-## ? **Validação do Deploy**
+## Validacao do Deploy
 
-### **Checklist Pós-Deploy**
+### Checklist Pos-Deploy
 - [ ] Site carrega sem erro 404
 - [ ] Fluxograma aparece no topo
-- [ ] Botões respondem corretamente  
+- [ ] Botoes respondem corretamente  
 - [ ] Toggles funcionam
-- [ ] CSS está aplicado (cores, layout)
+- [ ] CSS esta aplicado (cores, layout)
 - [ ] Responsivo funciona no mobile
 
-### **Debug Comum**
-- **404 Error:** Verifique se `index.html` está na raiz
+### Debug Comum
+- **404 Error:** Verifique se index.html esta na raiz
 - **Styles quebrados:** CDN do Tailwind pode estar bloqueado
-- **JS não funciona:** Verifique console do browser (F12)
+- **JS nao funciona:** Verifique console do browser (F12)
 
-## ?? **Atualizações Futuras**
+## Atualizacoes Futuras
 
 Para atualizar o simulador:
 ```bash
-# Fazer alterações nos arquivos
+# Fazer alteracoes nos arquivos
 git add .
-git commit -m "?? Atualização: [descrição da mudança]"
+git commit -m "Atualizacao: [descricao da mudanca]"
 git push origin main
 
-# GitHub Pages atualizará automaticamente
+# GitHub Pages atualizara automaticamente
 ```
 
-## ?? **Exemplo de Comandos Completos**
+## Exemplo de Comandos Completos
 
 ```bash
 cd /Users/juanyurigonzaga/Desktop/split-simulator
@@ -86,16 +86,16 @@ cd /Users/juanyurigonzaga/Desktop/split-simulator
 # Inicializar Git
 git init
 git add .
-git commit -m "?? SPLIT Simulator - Versão 1.0
+git commit -m "SPLIT Simulator - Versao 1.0
 
-? Funcionalidades:
+Funcionalidades:
 - Fluxograma interativo das 7 etapas
-- Configurações críticas do sistema
-- Validações técnicas baseadas no código real
+- Configuracoes criticas do sistema
+- Validacoes tecnicas baseadas no codigo real
 - Sistema de logs detalhado
 - Interface responsiva e moderna
 
-?? Pronto para deploy no GitHub Pages!"
+Pronto para deploy no GitHub Pages!"
 
 # Conectar ao GitHub (substitua SEU_USUARIO)
 git remote add origin https://github.com/SEU_USUARIO/split-simulator.git
@@ -103,40 +103,40 @@ git branch -M main
 git push -u origin main
 ```
 
-## ?? **Compartilhamento**
+## Compartilhamento
 
-Após o deploy, você pode compartilhar:
+Apos o deploy, voce pode compartilhar:
 
-**?? URL Direta**
+**URL Direta**
 ```
 https://seu-usuario.github.io/split-simulator
 ```
 
-**?? Para Equipe Técnica**
-> Novo simulador SPLIT disponível! 
+**Para Equipe Tecnica**
+> Novo simulador SPLIT disponivel! 
 > Acesse: https://seu-usuario.github.io/split-simulator
 > 
-> ? Fluxograma visual das 7 etapas
-> ? Configurações críticas testáveis  
-> ? Cenários de erro simulados
-> ? Logs técnicos detalhados
+> Fluxograma visual das 7 etapas
+> Configuracoes criticas testaveis  
+> Cenarios de erro simulados
+> Logs tecnicos detalhados
 
-**?? Para Stakeholders**
-> Simulador técnico do SPLIT já está no ar! ??
+**Para Stakeholders**
+> Simulador tecnico do SPLIT ja esta no ar!
 > 
 > Link: https://seu-usuario.github.io/split-simulator
 > 
 > Agora conseguimos simular e debugar o fluxo completo do SPLIT de forma visual e interativa.
 
-## ??? **Customizações Futuras**
+## Customizacoes Futuras
 
-Ideias para versões futuras:
-- [ ] Export/Import de cenários 
-- [ ] Histórico de simulações
-- [ ] Integração com API real (desenvolvimento)
+Ideias para versoes futuras:
+- [ ] Export/Import de cenarios 
+- [ ] Historico de simulacoes
+- [ ] Integracao com API real (desenvolvimento)
 - [ ] Themes (dark mode)
-- [ ] Mais validações específicas por vertical
+- [ ] Mais validacoes especificas por vertical
 
 ---
 
-**?? Parabéns! Seu SPLIT Simulator está pronto para o mundo!** ??
+**Parabens! Seu SPLIT Simulator esta pronto para o mundo!**

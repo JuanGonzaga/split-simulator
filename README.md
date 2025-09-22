@@ -66,7 +66,7 @@ split-simulator/
 
 ## Acesso Online
 
-**Site do Simulador:** [https://juangonzaga.github.io/split-simulator/](https://juangonzaga.github.io/split-simulator/)
+**Site do Simulador:** https://juangonzaga.github.io/split-simulator/
 
 ## Como Usar
 
