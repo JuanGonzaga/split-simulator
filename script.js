@@ -112,11 +112,11 @@ const FlowChart = ({ isOpen, onToggle, steps }) => {
           className="w-full py-3 flex items-center justify-between text-left hover:bg-zinc-50 transition-colors flowchart-header"
         >
           <div className="flex items-center gap-3">
-            <div className="text-lg font-semibold">?? Fluxograma do Processo</div>
+            <div className="text-lg font-semibold">Fluxograma do Processo</div>
             <div className="text-sm text-zinc-500">Acompanhe visualmente cada etapa</div>
           </div>
           <div className="text-zinc-400">
-            {isOpen ? '?' : '?'}
+            {isOpen ? 'Fechar' : 'Abrir'}
           </div>
         </button>
         
@@ -289,19 +289,19 @@ function App() {
     return [
       {
         id: 'owner',
-        label: 'Proprietário',
+        label: 'Proprietario',
         subtext: 'Dados + PJBank',
         status: !owner ? 'pending' : ownerError ? 'error' : 'completed'
       },
       {
         id: 'tenant',
-        label: 'Locatário',
+        label: 'Locatario',
         subtext: 'Cliente pagador',
         status: !tenant ? 'pending' : 'completed'
       },
       {
         id: 'property',
-        label: 'Imóvel',
+        label: 'Imovel',
         subtext: 'Unidade locada',
         status: !property ? 'pending' : 'completed'
       },
@@ -313,7 +313,7 @@ function App() {
       },
       {
         id: 'charge',
-        label: 'Cobrança',
+        label: 'Cobranca',
         subtext: 'Tag SPLIT',
         status: !charge ? 'pending' : !splitCriado ? 'error' : 'completed'
       },
@@ -326,7 +326,7 @@ function App() {
       {
         id: 'repasse',
         label: 'Repasse',
-        subtext: 'Valor líquido',
+        subtext: 'Valor liquido',
         status: !repasse ? 'pending' : splitCancelado ? 'error' : 'completed'
       }
     ];
@@ -479,7 +479,7 @@ function App() {
               <div className="cards-grid">
                 <StepCard 
                   step={1} 
-                  title="Cadastrar Proprietário" 
+                  title="Cadastrar Proprietario" 
                   done={!!owner && !ownerError} 
                   error={ownerError}
                   ctaLabel={owner ? "ok" : "Cadastrar"} 
@@ -492,17 +492,17 @@ function App() {
                 
                 <StepCard 
                   step={2} 
-                  title="Cadastrar Locatário" 
+                  title="Cadastrar Locatario" 
                   done={!!tenant} 
                   ctaLabel={tenant ? "ok" : "Cadastrar"} 
                   onClick={!tenant ? () => cadastrar("tenant") : undefined}
                 >
-                  <div className="text-sm text-zinc-600">Cliente que realizará os pagamentos.</div>
+                  <div className="text-sm text-zinc-600">Cliente que realizara os pagamentos.</div>
                 </StepCard>
                 
                 <StepCard 
                   step={3} 
-                  title="Cadastrar Imóvel" 
+                  title="Cadastrar Imovel" 
                   done={!!property} 
                   ctaLabel={property ? "ok" : "Cadastrar"} 
                   onClick={!property ? () => cadastrar("property") : undefined}
@@ -512,10 +512,10 @@ function App() {
               </div>
               
               <div className="mt-4 p-4 bg-zinc-50 rounded-lg">
-                <h3 className="font-medium mb-2">Configurações do Contrato</h3>
+                <h3 className="font-medium mb-2">Configuracoes do Contrato</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-zinc-600">Taxa de Administração (%)</label>
+                    <label className="text-sm text-zinc-600">Taxa de Administracao (%)</label>
                     <input 
                       type="number" 
                       value={taxaAdm} 
@@ -525,7 +525,7 @@ function App() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-zinc-600">Valor da Cobrança (R$)</label>
+                    <label className="text-sm text-zinc-600">Valor da Cobranca (R$)</label>
                     <input 
                       type="number" 
                       value={valorCobranca} 
@@ -549,11 +549,11 @@ function App() {
               </div>
             </Section>
 
-            <Section title="Cobrança, Liquidação e Repasse" subtitle="Processamento com validações técnicas">
+            <Section title="Cobranca, Liquidacao e Repasse" subtitle="Processamento com validacoes tecnicas">
               <div className="cards-grid">
                 <StepCard 
                   step={5} 
-                  title="Gerar Cobrança + Tag SPLIT" 
+                    title="Gerar Cobranca + Tag SPLIT"
                   done={!!charge && splitCriado} 
                   ctaLabel={charge ? "ok" : "Gerar"} 
                   onClick={!charge ? gerarCobranca : undefined} 
