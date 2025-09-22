@@ -22,7 +22,7 @@ Este simulador foi desenvolvido para ajudar engenheiros e analistas tecnicos a e
 
 ### Fluxograma Interativo
 - **Aba expansivel** no topo com visualizacao completa do processo
-- **7 etapas principais:** Proprietario ? Locatario ? Imovel ? Contrato ? Cobranca ? Webhook ? Repasse
+- **7 etapas principais:** Proprietario > Locatario > Imovel > Contrato > Cobranca > Webhook > Repasse
 - **Status dinamico:** Verde (completo), Vermelho (erro), Cinza (pendente)
 - **Conectores visuais** que mostram o fluxo entre etapas
 
@@ -57,11 +57,11 @@ Este simulador foi desenvolvido para ajudar engenheiros e analistas tecnicos a e
 
 ```
 split-simulator/
-??? index.html          # Estrutura HTML principal
-??? style.css           # Estilos customizados
-??? script.js           # Logica React completa
-??? README.md           # Esta documentacao
-??? .gitignore          # Arquivos ignorados pelo Git
+|-- index.html          # Estrutura HTML principal
+|-- style.css           # Estilos customizados
+|-- script.js           # Logica React completa
+|-- README.md           # Esta documentacao
+|-- .gitignore          # Arquivos ignorados pelo Git
 ```
 
 ## Acesso Online
