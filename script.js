@@ -1,0 +1,763 @@
+/**
+ * SPLIT - Simulador Técnico Completo
+ * ===================================
+ * Baseado na investigação real do código Zend Framework 1
+ * Inclui configurações críticas, validações técnicas e cenários complexos
+ * 
+ * @author Superlogica - Equipe Técnica
+ * @version 1.0
+ */
+
+const { useMemo, useState } = React;
+
+// Paletas de cores para badges e status
+const tones = {
+  zinc:    { bg: "bg-zinc-100",    text: "text-zinc-800",    pill: "bg-zinc-200 text-zinc-700" },
+  emerald: { bg: "bg-emerald-100", text: "text-emerald-800", pill: "bg-emerald-500 text-white" },
+  sky:     { bg: "bg-sky-100",     text: "text-sky-800",     pill: "bg-sky-500 text-white" },
+  amber:   { bg: "bg-amber-50",    text: "text-amber-700",   pill: "bg-amber-500 text-white" },
+  red:     { bg: "bg-red-50",      text: "text-red-700",     pill: "bg-red-500 text-white" },
+  purple:  { bg: "bg-purple-50",   text: "text-purple-700",  pill: "bg-purple-500 text-white" }
+};
+
+// Componentes UI Reutilizáveis
+// ============================
+
+const Badge = ({ children, tone="zinc" }) => {
+  const t = tones[tone] || tones.zinc;
+  return <span className={`inline-flex items-center px-2 py-0.5 text-xs rounded-full ${t.bg} ${t.text}`}>{children}</span>;
+};
+
+const Section = ({ title, subtitle, children }) => (
+  <div className="bg-white/70 backdrop-blur p-4 md:p-6 rounded-2xl shadow-sm border border-zinc-200 section-card">
+    <div className="flex items-center gap-2 mb-2">
+      <h2 className="text-lg md:text-xl font-semibold tracking-tight">{title}</h2>
+    </div>
+    {subtitle && <div className="text-xs text-zinc-500 mb-3">{subtitle}</div>}
+    {children}
+  </div>
+);
+
+const StepCard = ({ step, title, done, ctaLabel, onClick, children, warning, info, error }) => (
+  <div className={`p-4 rounded-xl border step-card min-h-[120px] flex flex-col ${done ? "border-emerald-300 bg-emerald-50" : error ? "border-red-300 bg-red-50" : "border-zinc-200 bg-zinc-50"}`}>
+    {/* Header com numero, titulo e badge */}
+    <div className="flex items-center gap-2 mb-3">
+      <div className={`w-6 h-6 rounded-full grid place-items-center text-xs font-bold shrink-0 ${done ? "bg-emerald-500 text-white" : error ? "bg-red-500 text-white" : "bg-zinc-200 text-zinc-700"}`}>{step}</div>
+      <div className="font-medium text-sm flex-1">{title}</div>
+      {done ? <Badge tone="emerald">feito</Badge> : error ? <Badge tone="red">erro</Badge> : <Badge>pendente</Badge>}
+    </div>
+    
+    {/* Conteudo principal */}
+    <div className="flex-1 space-y-2">
+      {children}
+      {error && <div className="text-red-700 text-xs bg-red-50 border border-red-200 rounded-lg p-2"><strong>ERRO:</strong> {error}</div>}
+      {warning && <div className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-lg p-2"><strong>AVISO:</strong> {warning}</div>}
+      {info && <div className="text-sky-700 text-xs bg-sky-50 border border-sky-200 rounded-lg p-2"><strong>INFO:</strong> {info}</div>}
+    </div>
+    
+    {/* Botao sempre no final */}
+    {onClick && (
+      <div className="mt-3 flex justify-end">
+        <button
+          onClick={onClick}
+          className="px-4 py-1.5 rounded-lg bg-zinc-900 text-white text-sm hover:bg-zinc-800 disabled:opacity-50 action-button transition-all"
+          disabled={!onClick}
+        >
+          {ctaLabel}
+        </button>
+      </div>
+    )}
+  </div>
+);
+
+const Toggle = ({ label, checked, onChange, hint, critical }) => (
+  <label className={`flex items-start justify-between gap-3 py-2 ${critical ? 'toggle-critical' : ''}`}>
+    <div>
+      <div className={`text-sm font-medium ${critical ? 'text-red-700' : ''}`}>
+        {label} {critical && <span className="text-red-500 font-bold">*</span>}
+      </div>
+      {hint && <div className="text-xs text-zinc-500">{hint}</div>}
+    </div>
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${checked ? (critical ? "bg-red-500" : "bg-emerald-500") : "bg-zinc-300"}`}
+      aria-pressed={checked}
+    >
+      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${checked ? "translate-x-5" : "translate-x-1"}`} />
+    </button>
+  </label>
+);
+
+const LogRow = ({ ts, label, detail, tone="zinc" }) => {
+  const t = tones[tone] || tones.zinc;
+  return (
+    <div className="grid grid-cols-12 gap-2 text-xs items-baseline">
+      <div className="col-span-3 text-zinc-400 tabular-nums">{ts}</div>
+      <div className={`col-span-3 font-medium ${t.text}`}>{label}</div>
+      <div className="col-span-6 text-zinc-600">{detail}</div>
+    </div>
+  );
+};
+
+// Componente do Fluxograma
+// ========================
+
+const FlowChart = ({ isOpen, onToggle, steps }) => {
+  return (
+    <div className="bg-white border-b border-zinc-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <button
+          onClick={onToggle}
+          className="w-full py-3 flex items-center justify-between text-left hover:bg-zinc-50 transition-colors flowchart-header"
+        >
+          <div className="flex items-center gap-3">
+            <div className="text-lg font-semibold">?? Fluxograma do Processo</div>
+            <div className="text-sm text-zinc-500">Acompanhe visualmente cada etapa</div>
+          </div>
+          <div className="text-zinc-400">
+            {isOpen ? '?' : '?'}
+          </div>
+        </button>
+        
+        {isOpen && (
+          <div className="pb-6">
+            <div className="flex items-center justify-center overflow-x-auto py-4 flowchart-container">
+              <div className="flex items-center gap-2 min-w-max">
+                {steps.map((step, index) => (
+                  <React.Fragment key={step.id}>
+                    {/* Etapa */}
+                    <div className="flex flex-col items-center flow-step">
+                      <div 
+                        className={`relative w-16 h-16 rounded-xl border-2 flex items-center justify-center text-xs font-bold transition-all duration-300 flow-step-transition ${
+                          step.status === 'completed' 
+                            ? 'bg-emerald-500 border-emerald-600 text-white shadow-lg flow-step-completed' 
+                            : step.status === 'error'
+                            ? 'bg-red-500 border-red-600 text-white shadow-lg flow-step-error'
+                            : 'bg-zinc-100 border-zinc-300 text-zinc-600'
+                        }`}
+                      >
+                        {step.status === 'completed' ? '?' : step.status === 'error' ? '?' : index + 1}
+                        {step.status === 'completed' && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">?</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className={`mt-2 text-xs font-medium text-center px-2 flow-step-label ${
+                        step.status === 'completed' ? 'text-emerald-700' 
+                        : step.status === 'error' ? 'text-red-700' 
+                        : 'text-zinc-600'
+                      }`}>
+                        {step.label}
+                      </div>
+                      {step.subtext && (
+                        <div className="text-xs text-zinc-400 text-center mt-1 max-w-20">
+                          {step.subtext}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Seta conectora */}
+                    {index < steps.length - 1 && (
+                      <div className={`flex items-center mx-2 flow-connector ${
+                        steps[index + 1].status === 'completed' ? 'text-emerald-500' 
+                        : steps[index + 1].status === 'error' ? 'text-red-500' 
+                        : 'text-zinc-300'
+                      }`}>
+                        <div className="w-8 h-0.5 bg-current"></div>
+                        <div className="w-2 h-2 border-t-2 border-r-2 border-current rotate-45 -ml-1"></div>
+                      </div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+            
+            <div className="text-center text-xs text-zinc-500 mt-4">
+              ?? Concluído  ?  ?? Com erro  ?  ? Pendente  ?  
+              Clique em qualquer seção abaixo para avançar no fluxo
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Utilitários
+// ===========
+
+function fmtTime(d=new Date()) {
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+const rand = () => Math.floor(Math.random()*100000);
+
+// Componente Principal
+// ====================
+
+function App() {
+  // Estados das entidades
+  const [owner, setOwner] = useState(null);
+  const [tenant, setTenant] = useState(null);
+  const [property, setProperty] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [charge, setCharge] = useState(null);
+  const [webhook, setWebhook] = useState(null);
+  const [repasse, setRepasse] = useState(null);
+  
+  // Estado do fluxograma
+  const [flowChartOpen, setFlowChartOpen] = useState(true);
+
+  // Configurações críticas do sistema
+  const [novoSplitAtivo, setNovoSplitAtivo] = useState(true);
+  const [splitSempreCriar, setSplitSempreCriar] = useState(false);
+  const [multisplitAtivo, setMultisplitAtivo] = useState(false);
+
+  // Cenários de negócio
+  const [garantiaAtiva, setGarantiaAtiva] = useState(false);
+  const [despesaIndevida, setDespesaIndevida] = useState(false);
+  const [cpfCnpjObrigatorio, setCpfCnpjObrigatorio] = useState(true);
+  const [dadosInvalidos, setDadosInvalidos] = useState(false);
+  const [valorBaixo, setValorBaixo] = useState(false);
+  const [descontoPontualidade, setDescontoPontualidade] = useState(false);
+  const [webhookTimeout, setWebhookTimeout] = useState(false);
+  const [splitCancelado, setSplitCancelado] = useState(false);
+
+  // Configurações financeiras
+  const [valorCobranca, setValorCobranca] = useState(1000);
+  const [taxaAdm, setTaxaAdm] = useState(5);
+
+  // Sistema de logs
+  const [logs, setLogs] = useState([]);
+  const pushLog = (label, detail, tone="zinc") => setLogs(l => [{ ts: fmtTime(), label, detail, tone }, ...l]);
+
+  // Lógica de elegibilidade e validações
+  const canCreateContract = owner && tenant && property;
+  
+  const splitElegivel = useMemo(() => {
+    if (!contract) return false;
+    if (garantiaAtiva) return false;
+    if (cpfCnpjObrigatorio && dadosInvalidos) return false;
+    return true;
+  }, [contract, garantiaAtiva, cpfCnpjObrigatorio, dadosInvalidos]);
+
+  const valorMinimoValido = useMemo(() => {
+    const valor = valorBaixo ? 12 : valorCobranca;
+    return valor >= 15;
+  }, [valorBaixo, valorCobranca]);
+
+  const splitCriado = useMemo(() => {
+    if (!charge) return false;
+    if (!splitElegivel) return false;
+    if (!valorMinimoValido && !splitSempreCriar) return false;
+    return charge.splitTag;
+  }, [charge, splitElegivel, valorMinimoValido, splitSempreCriar]);
+
+  const prontoPraRepasse = useMemo(() => {
+    if (!webhook) return false;
+    if (webhookTimeout) return false;
+    if (splitCancelado) return false;
+    return webhook.type === "boleto_liquidado";
+  }, [webhook, webhookTimeout, splitCancelado]);
+
+  // Cálculo do valor líquido com multisplit
+  const valorLiquidoRepasse = useMemo(() => {
+    if (!charge) return 0;
+    const bruto = valorBaixo ? 12 : valorCobranca;
+    const desconto = descontoPontualidade ? bruto * 0.05 : 0;
+    const base = bruto - desconto;
+    const taxaAdmValor = base * (taxaAdm / 100);
+    const liquido = Math.max(base - taxaAdmValor, 0);
+    if (multisplitAtivo) {
+      return { total: liquido, prop: liquido * 0.8, terceiro: liquido * 0.2 };
+    }
+    return liquido;
+  }, [charge, valorBaixo, valorCobranca, descontoPontualidade, taxaAdm, multisplitAtivo]);
+
+  // Validação específica do proprietário
+  const ownerError = useMemo(() => {
+    if (!owner) return null;
+    if (cpfCnpjObrigatorio && !owner.cpfCnpj) return "CPF/CNPJ obrigatório não informado";
+    if (!owner.contaPJBank) return "Dados bancários inválidos / conta PJBank inválida";
+    return null;
+  }, [owner, cpfCnpjObrigatorio]);
+
+  // Status das etapas para o fluxograma
+  const flowSteps = useMemo(() => {
+    return [
+      {
+        id: 'owner',
+        label: 'Proprietário',
+        subtext: 'Dados + PJBank',
+        status: !owner ? 'pending' : ownerError ? 'error' : 'completed'
+      },
+      {
+        id: 'tenant',
+        label: 'Locatário',
+        subtext: 'Cliente pagador',
+        status: !tenant ? 'pending' : 'completed'
+      },
+      {
+        id: 'property',
+        label: 'Imóvel',
+        subtext: 'Unidade locada',
+        status: !property ? 'pending' : 'completed'
+      },
+      {
+        id: 'contract',
+        label: 'Contrato',
+        subtext: 'FL_SPLIT_CON=1',
+        status: !contract ? 'pending' : garantiaAtiva ? 'error' : 'completed'
+      },
+      {
+        id: 'charge',
+        label: 'Cobrança',
+        subtext: 'Tag SPLIT',
+        status: !charge ? 'pending' : !splitCriado ? 'error' : 'completed'
+      },
+      {
+        id: 'webhook',
+        label: 'Webhook',
+        subtext: 'boleto_liquidado',
+        status: !webhook ? 'pending' : webhookTimeout ? 'error' : 'completed'
+      },
+      {
+        id: 'repasse',
+        label: 'Repasse',
+        subtext: 'Valor líquido',
+        status: !repasse ? 'pending' : splitCancelado ? 'error' : 'completed'
+      }
+    ];
+  }, [owner, tenant, property, contract, charge, webhook, repasse, ownerError, garantiaAtiva, splitCriado, webhookTimeout, splitCancelado]);
+
+  // Progresso geral
+  const progress = useMemo(() => {
+    const items = [owner, tenant, property, contract, charge, webhook, repasse];
+    const done = items.filter(Boolean).length;
+    return Math.round((done / items.length) * 100);
+  }, [owner, tenant, property, contract, charge, webhook, repasse]);
+
+  // Ações do usuário
+  // ================
+
+  const cadastrar = (tipo) => {
+    const base = { id: rand(), createdAt: fmtTime() };
+    
+    if (tipo === "owner") {
+      const temCpfCnpj = !(cpfCnpjObrigatorio && dadosInvalidos);
+      const contaValida = !dadosInvalidos && temCpfCnpj;
+      const o = { ...base, nome: "Proprietário(a)", contaPJBank: contaValida, cpfCnpj: temCpfCnpj };
+      setOwner(o);
+      
+      if (!temCpfCnpj && cpfCnpjObrigatorio) {
+        pushLog("Erro", "CPF/CNPJ obrigatório não informado.", "red");
+      } else if (!contaValida) {
+        pushLog("Aviso", "Conta PJBank inválida ou dados bancários incorretos.", "amber");
+      } else {
+        pushLog("Cadastro", "Proprietário criado com dados válidos.", "emerald");
+      }
+    }
+    
+    if (tipo === "tenant") {
+      setTenant({ ...base, nome: "Locatário(a)" });
+      pushLog("Cadastro", "Locatário criado.", "emerald");
+    }
+    
+    if (tipo === "property") {
+      setProperty({ ...base, nome: "Imóvel" });
+      pushLog("Cadastro", "Imóvel criado.", "emerald");
+    }
+  };
+
+  const gerarContrato = () => {
+    if (!canCreateContract) return;
+    const c = { id: rand(), flSplit: true, garantiaAtiva, taxaAdm };
+    setContract(c);
+    pushLog("Contrato", `Contrato gerado (FL_SPLIT_CON=1). Taxa admin: ${taxaAdm}%. Garantia: ${garantiaAtiva ? "ativa" : "inativa"}.`, "emerald");
+  };
+
+  const gerarCobranca = () => {
+    if (!contract) return;
+    const valor = valorBaixo ? 12 : valorCobranca;
+    const tagSplit = splitElegivel && (valorMinimoValido || splitSempreCriar);
+    const ch = { id: rand(), valor, splitTag: tagSplit, engine: novoSplitAtivo ? "novo" : "legado" };
+    setCharge(ch);
+    
+    if (!splitElegivel) {
+      pushLog("Cobrança", `Split inelegível. Engine: ${ch.engine}`, "amber");
+    } else if (!valorMinimoValido && !splitSempreCriar) {
+      pushLog("Validação", `Valor R$${valor} < R$15 - split não criado.`, "amber");
+    } else if (splitSempreCriar && !valorMinimoValido) {
+      pushLog("Config", "split.semprecriar=true FORÇOU criação mesmo com valor baixo.", "purple");
+    } else {
+      pushLog("Cobrança", `Split criado. Engine: ${ch.engine}. Tag aplicada.`, "emerald");
+    }
+  };
+
+  const liquidarBoleto = () => {
+    if (!charge) return;
+    if (webhookTimeout) {
+      pushLog("Timeout", "Webhook timeout após 30 segundos. Processamento manual necessário.", "red");
+      return;
+    }
+    const event = { type: "boleto_liquidado", recebimentoId: charge.id };
+    setWebhook(event);
+    pushLog("Webhook", "boleto_liquidado recebido do PJBank dentro do prazo.", "sky");
+  };
+
+  const processarRepasse = () => {
+    if (!charge || !webhook) return;
+    
+    if (splitCancelado) {
+      pushLog("Erro", "Split cancelado por erro anterior. Status: CANCELADO", "red");
+      setRepasse(null);
+      return;
+    }
+    
+    if (despesaIndevida) {
+      pushLog("Auditoria", "ERRO: Despesas indevidas detectadas. Diferença ERP x PJBank.", "red");
+      setSplitCancelado(true);
+      setRepasse(null);
+      return;
+    }
+    
+    if (!splitCriado) {
+      pushLog("Cancelado", "Split não foi criado na cobrança original.", "amber");
+      return;
+    }
+
+    // Montagem dos dados de repasse (com ou sem multisplit)
+    if (multisplitAtivo && typeof valorLiquidoRepasse === "object") {
+      const { total, prop, terceiro } = valorLiquidoRepasse;
+      const repData = { id: rand(), status: "confirmado", engine: charge.engine, total, prop, terceiro };
+      setRepasse(repData);
+      pushLog("Repasse", `Proprietário R$ ${prop.toFixed(2)} | Terceiro R$ ${terceiro.toFixed(2)} (Total: R$ ${total.toFixed(2)})`, "emerald");
+    } else {
+      const valor = valorLiquidoRepasse;
+      const repData = { id: rand(), valor, status: "confirmado", engine: charge.engine };
+      setRepasse(repData);
+      pushLog("Repasse", `SUCESSO: Proprietário recebeu R$ ${valor.toFixed(2)} via ${charge.engine}.`, "emerald");
+    }
+
+    pushLog("Database", "Dados gravados na tabela SPLIT do financeiro (<licenca>-001).", "sky");
+  };
+
+  const resetar = () => {
+    setOwner(null); setTenant(null); setProperty(null); setContract(null);
+    setCharge(null); setWebhook(null); setRepasse(null); setLogs([]);
+    setSplitCancelado(false);
+  };
+
+  // Render Principal
+  // ================
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white">
+      {/* Fluxograma fixo no topo */}
+      <FlowChart 
+        isOpen={flowChartOpen} 
+        onToggle={() => setFlowChartOpen(!flowChartOpen)} 
+        steps={flowSteps} 
+      />
+      
+      <div className="w-full mx-auto max-w-7xl p-4 md:p-8">
+        <header className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">SPLIT - Simulador Técnico Completo</h1>
+          <p className="text-zinc-600 mt-1">
+            Baseado na investigação real do código. Inclui configurações críticas, validações técnicas e cenários complexos descobertos na análise.
+          </p>
+          <div className="mt-2 text-sm text-zinc-500">
+            Compatível com CodePen ? também roda como arquivo único local.
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          <div className="xl:col-span-3 space-y-4">
+            <Section title="Cadastro e Contrato" subtitle="Crie as entidades básicas e ative o SPLIT">
+              <div className="cards-grid">
+                <StepCard 
+                  step={1} 
+                  title="Cadastrar Proprietário" 
+                  done={!!owner && !ownerError} 
+                  error={ownerError}
+                  ctaLabel={owner ? "ok" : "Cadastrar"} 
+                  onClick={!owner ? () => cadastrar("owner") : undefined}
+                >
+                  <div className="text-sm text-zinc-600">
+                    Requer conta PJBank válida {cpfCnpjObrigatorio && "+ CPF/CNPJ obrigatório"}
+                  </div>
+                </StepCard>
+                
+                <StepCard 
+                  step={2} 
+                  title="Cadastrar Locatário" 
+                  done={!!tenant} 
+                  ctaLabel={tenant ? "ok" : "Cadastrar"} 
+                  onClick={!tenant ? () => cadastrar("tenant") : undefined}
+                >
+                  <div className="text-sm text-zinc-600">Cliente que realizará os pagamentos.</div>
+                </StepCard>
+                
+                <StepCard 
+                  step={3} 
+                  title="Cadastrar Imóvel" 
+                  done={!!property} 
+                  ctaLabel={property ? "ok" : "Cadastrar"} 
+                  onClick={!property ? () => cadastrar("property") : undefined}
+                >
+                  <div className="text-sm text-zinc-600">Unidade locada vinculada ao contrato.</div>
+                </StepCard>
+              </div>
+              
+              <div className="mt-4 p-4 bg-zinc-50 rounded-lg">
+                <h3 className="font-medium mb-2">Configurações do Contrato</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-zinc-600">Taxa de Administração (%)</label>
+                    <input 
+                      type="number" 
+                      value={taxaAdm} 
+                      onChange={(e) => setTaxaAdm(Number(e.target.value))}
+                      className="w-full mt-1 px-3 py-2 border border-zinc-300 rounded-lg text-sm"
+                      min="0" max="20" step="0.5"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-zinc-600">Valor da Cobrança (R$)</label>
+                    <input 
+                      type="number" 
+                      value={valorCobranca} 
+                      onChange={(e) => setValorCobranca(Number(e.target.value))}
+                      className="w-full mt-1 px-3 py-2 border border-zinc-300 rounded-lg text-sm"
+                      min="10" max="10000" step="50"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <StepCard 
+                    step={4} 
+                    title="Gerar Contrato (FL_SPLIT_CON=1)" 
+                    done={!!contract} 
+                    ctaLabel={contract ? "ok" : "Gerar"} 
+                    onClick={!contract && !ownerError ? gerarContrato : undefined} 
+                    warning={ownerError ? `Corrija o cadastro do proprietário: ${ownerError}` : (garantiaAtiva ? "Garantia ativa impede SPLIT durante período de cobertura." : undefined)}
+                  />
+                </div>
+              </div>
+            </Section>
+
+            <Section title="Cobrança, Liquidação e Repasse" subtitle="Processamento com validações técnicas">
+              <div className="cards-grid">
+                <StepCard 
+                  step={5} 
+                  title="Gerar Cobrança + Tag SPLIT" 
+                  done={!!charge && splitCriado} 
+                  ctaLabel={charge ? "ok" : "Gerar"} 
+                  onClick={!charge ? gerarCobranca : undefined} 
+                  warning={!valorMinimoValido && !splitSempreCriar ? `Valor R$${valorBaixo ? 12 : valorCobranca} < R$15 bloqueia split.` : undefined}
+                  info={novoSplitAtivo ? "Engine: Services_Split_Split (novo)" : "Engine: Helpers_Repasses (legado)"}
+                >
+                  <div className="text-sm text-zinc-600">
+                    {splitSempreCriar ? "split.semprecriar=true FORÇA criação" : "Tag SPLIT aplicada se elegível"}
+                  </div>
+                </StepCard>
+                
+                <StepCard 
+                  step={6} 
+                  title="Webhook (boleto_liquidado)" 
+                  done={!!webhook && !webhookTimeout} 
+                  error={webhookTimeout ? "Timeout após 30s" : null}
+                  ctaLabel={webhook ? "ok" : "Receber"} 
+                  onClick={!webhook ? liquidarBoleto : undefined}
+                >
+                  <div className="text-sm text-zinc-600">
+                    PJBank ? ERP (Controllers/HooksController.php)
+                  </div>
+                </StepCard>
+                
+                <StepCard 
+                  step={7} 
+                  title="Processar Repasse" 
+                  done={!!repasse} 
+                  ctaLabel={repasse ? "ok" : "Processar"} 
+                  onClick={!repasse && prontoPraRepasse ? processarRepasse : undefined} 
+                  error={splitCancelado ? "Split cancelado por erro" : null}
+                  warning={!prontoPraRepasse ? "Aguardando webhook válido para liberar o repasse." : (despesaIndevida ? "Auditoria detectou despesas indevidas." : undefined)}
+                >
+                  <div className="text-sm text-zinc-600">
+                    {multisplitAtivo && typeof valorLiquidoRepasse === "object"
+                      ? `Líquido total: R$ ${valorLiquidoRepasse.total.toFixed(2)} | Prop: R$ ${valorLiquidoRepasse.prop.toFixed(2)} | Terceiro: R$ ${valorLiquidoRepasse.terceiro.toFixed(2)}`
+                      : `Valor líquido: R$ ${Number(valorLiquidoRepasse).toFixed(2)}`
+                    }
+                  </div>
+                </StepCard>
+              </div>
+
+              <div className="mt-4 p-6 rounded-xl bg-white border border-zinc-200 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm font-medium text-zinc-700">Progresso do Simulador</div>
+                  <div className="text-sm text-zinc-500 font-mono">{progress}% concluído</div>
+                </div>
+                <div className="h-3 w-full bg-zinc-200 rounded-full overflow-hidden mb-4">
+                  <div className="h-full bg-emerald-500 progress-bar" style={{ width: progress + "%" }} />
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-start">
+                    <button 
+                      onClick={resetar} 
+                      className="px-4 py-2 rounded-lg border border-zinc-300 text-zinc-700 text-sm hover:bg-zinc-50 hover:border-zinc-400 transition-colors"
+                    >
+                      ?? Resetar Simulação
+                    </button>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                  {repasse && !multisplitAtivo && <Badge tone="emerald">Repasse: R$ {repasse.valor.toFixed(2)}</Badge>}
+                  {repasse && multisplitAtivo && repasse.prop != null && (
+                    <>
+                      <Badge tone="emerald">Prop: R$ {repasse.prop.toFixed(2)}</Badge>
+                      <Badge tone="purple">Terceiro: R$ {repasse.terceiro.toFixed(2)}</Badge>
+                      <Badge tone="sky">Total: R$ {repasse.total.toFixed(2)}</Badge>
+                    </>
+                  )}
+                  {charge && <Badge tone={splitCriado ? "emerald" : "amber"}>Tag SPLIT: {splitCriado ? "aplicada" : "não aplicada"}</Badge>}
+                  {charge && <Badge tone="purple">Engine: {charge.engine}</Badge>}
+                  {repasse && <Badge tone="sky">Status: {repasse.status}</Badge>}
+                  {splitCancelado && <Badge tone="red">CANCELADO</Badge>}
+
+                  {/* Badges de estado do webhook */}
+                  {!webhook && charge && <Badge tone="amber">aguardando webhook</Badge>}
+                  {webhook && webhookTimeout && <Badge tone="red">timeout webhook</Badge>}
+                  {webhook && !webhookTimeout && !splitCancelado && <Badge tone="sky">webhook ok</Badge>}
+                  </div>
+                </div>
+              </div>
+            </Section>
+          </div>
+
+          <div className="space-y-4">
+            <Section title="[CONFIG] Configurações Críticas do Sistema" subtitle="Descobertas na investigação técnica">
+              <div className="space-y-2">
+                <Toggle 
+                  label="novosplit.ativo" 
+                  checked={novoSplitAtivo} 
+                  onChange={setNovoSplitAtivo} 
+                  hint="Define qual engine usar: novo (Services_Split_Split) vs legado (Helpers_Repasses)" 
+                  critical={true}
+                />
+                <Toggle 
+                  label="split.semprecriar" 
+                  checked={splitSempreCriar} 
+                  onChange={setSplitSempreCriar} 
+                  hint="Força criação do SPLIT mesmo em cenários não ideais (ignora valor mínimo)" 
+                  critical={true}
+                />
+                <Toggle 
+                  label="multisplit.ativo" 
+                  checked={multisplitAtivo} 
+                  onChange={setMultisplitAtivo} 
+                  hint="Divide o líquido (80% proprietário / 20% terceiro) e exibe nos badges"
+                />
+              </div>
+            </Section>
+
+            <Section title="[REGRAS] Cenários e Regras de Negócio" subtitle="Simulações baseadas no código real">
+              <div className="space-y-2">
+                <Toggle 
+                  label="pessoas.travarcpfproprietario" 
+                  checked={cpfCnpjObrigatorio} 
+                  onChange={setCpfCnpjObrigatorio} 
+                  hint="CPF/CNPJ obrigatório para proprietário (config crítica para SPLIT)" 
+                  critical={true}
+                />
+                <Toggle 
+                  label="Garantia ativa" 
+                  checked={garantiaAtiva} 
+                  onChange={setGarantiaAtiva} 
+                  hint="Bloqueia SPLIT durante período de garantia ativa" 
+                />
+                <Toggle 
+                  label="Dados bancários/CPF inválidos" 
+                  checked={dadosInvalidos} 
+                  onChange={setDadosInvalidos} 
+                  hint="Dados PJBank inválidos impedem criação do split" 
+                />
+                <Toggle 
+                  label="Valor < R$15,00" 
+                  checked={valorBaixo} 
+                  onChange={setValorBaixo} 
+                  hint="Valor mínimo hard-coded (VALOR_MINIMO_REPASSE)" 
+                />
+                <Toggle 
+                  label="Desconto de pontualidade" 
+                  checked={descontoPontualidade} 
+                  onChange={setDescontoPontualidade} 
+                  hint="Aplica desconto antes do cálculo (repasse.descontopontualidade)" 
+                />
+                <Toggle 
+                  label="Despesas indevidas" 
+                  checked={despesaIndevida} 
+                  onChange={setDespesaIndevida} 
+                  hint="Gera diferença ERP x PJBank, cancela split e requer auditoria" 
+                />
+                <Toggle 
+                  label="Webhook timeout" 
+                  checked={webhookTimeout} 
+                  onChange={setWebhookTimeout} 
+                  hint="Timeout no webhook PJBank após 30 segundos" 
+                />
+              </div>
+            </Section>
+
+            <Section title="[LOGS] Logs da Simulação" subtitle="Timeline técnica detalhada">
+              <div className="space-y-1 max-h-80 overflow-auto pr-1 logs-container">
+                {logs.length === 0 && (
+                  <div className="text-sm text-zinc-500">
+                    Sem eventos ainda. Execute as ações para ver os logs técnicos.
+                  </div>
+                )}
+                {logs.map((l, i) => <LogRow key={i} {...l} />)}
+              </div>
+            </Section>
+
+            <Section title="[TECH] Detalhes Técnicos">
+              <div className="text-xs text-zinc-600 space-y-2">
+                <div><strong>Tabelas:</strong></div>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li><code>&lt;licenca&gt;-001.SPLIT</code> - Fonte da verdade (financeiro)</li>
+                  <li><code>app26_&lt;licenca&gt;-001.SPLIT_*</code> - Logs e histórico (apps)</li>
+                </ul>
+                
+                <div><strong>Arquivos críticos:</strong></div>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li><code>Services/Cobrancas/Split.php</code> - Lógica principal</li>
+                  <li><code>Controllers/HooksController.php</code> - Webhooks PJBank</li>
+                  <li><code>Models/ImobiliariaConf.php</code> - Configs que afetam SPLIT</li>
+                </ul>
+                
+                <div><strong>Validações:</strong></div>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>Valor mínimo: R$ 15,00</li>
+                  <li>CPF/CNPJ obrigatório (quando ativo)</li>
+                  <li>Conta bancária válida no PJBank</li>
+                  <li>FL_SPLIT_CON = 1 no contrato</li>
+                  <li>Sem garantia ativa</li>
+                </ul>
+              </div>
+            </Section>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Inicialização da aplicação
+// ==========================
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);

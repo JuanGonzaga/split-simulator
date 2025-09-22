@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SPLIT - Simulador Técnico Completo</title>
+  <meta name="description" content="Simulador técnico completo do sistema SPLIT para Zend Framework 1 - Superlogica">
+  <meta name="author" content="Superlogica">
+  
+  <!-- Tailwind CSS (Play CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          borderRadius: { '2xl': '1rem' }
+        }
+      }
+    }
+  </script>
+  
+  <!-- CSS customizado -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen">
+  <div id="root"></div>
+
+  <!-- React 18 UMD -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  
+  <!-- Babel para aceitar JSX no navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Script principal -->
+  <script type="text/babel" src="script.js"></script>
+</body>
+</html>
